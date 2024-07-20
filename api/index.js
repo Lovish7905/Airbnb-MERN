@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser');
 const imageDownloader = require('image-downloader');
 const multer = require('multer');
 const fs = require('fs');
-const mime = require('mime-types');
+
 
 require('dotenv').config();
 const app = express();
@@ -105,18 +105,18 @@ app.post('/api/upload-by-link', async (req,res) => {
   const newName = 'photo' + Date.now() + '.jpg';
   await imageDownloader.image({
     url: link,
-    dest: '/tmp/' +newName,
+    dest: '/uploads' +newName,
   });
-  const url = await uploadToS3('/tmp/' +newName, newName, mime.lookup('/tmp/' +newName));
-  res.json(url);
+  
+  res.json(newName);
 });
 
 const photosMiddleware = multer({dest:'/tmp'});
 app.post('/api/upload', photosMiddleware.array('photos', 100), async (req,res) => {
   const uploadedFiles = [];
   for (let i = 0; i < req.files.length; i++) {
-    const {path,originalname,mimetype} = req.files[i];
-    const url = await uploadToS3(path, originalname, mimetype);
+    const {originalname} = req.files[i];
+    const url = originalname;
     uploadedFiles.push(url);
   }
   res.json(uploadedFiles);
